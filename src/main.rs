@@ -53,14 +53,11 @@ fn main() {
     let mut output_text = String::new();
 
     for item in input_syntax.items.iter() {
-        match item {
-            syn::Item::Type(item_type) => {
-                let type_text = parse_item_type(item_type);
-                output_text.push_str(&type_text);
-            }
-            _ => {
-                dbg!("Unimplemented type!");
-            }
+        if let syn::Item::Type(item_type) = item {
+            let type_text = parse_item_type(item_type);
+            output_text.push_str(&type_text);
+        } else {
+            dbg!("Unimplemented type!");
         }
     }
 
@@ -69,6 +66,45 @@ fn main() {
         .unwrap_or_else(|_| panic!("Failed to write output file {}", output_filename));
 }
 
-fn parse_item_type(_item_type: &syn::ItemType) -> String {
-    String::from("todo")
+fn parse_item_type(item_type: &syn::ItemType) -> String {
+    let mut output_text = String::new();
+
+    let type_string = parse_type(&item_type.ty);
+
+    let text = format!("export type {} = {};\n", &item_type.ident, &type_string);
+
+    output_text.push_str(&text);
+
+    output_text
+}
+
+fn parse_type(syn_type: &syn::Type) -> String {
+    let mut output_text = String::new();
+    if let syn::Type::Path(type_path) = syn_type {
+        let seg = type_path.path.segments.last().unwrap();
+
+        let field_type = seg.ident.to_string();
+
+        let ts_field_type = parse_type_ident(&field_type).to_owned();
+
+        output_text.push_str(&ts_field_type);
+
+        if let syn::PathArguments::None = &seg.arguments {
+        } else {
+            dbg!("Unimplemented token");
+        }
+    } else {
+        dbg!("Unimplemented token");
+    }
+    output_text
+}
+
+fn parse_type_ident(ident: &str) -> &str {
+    match ident {
+        "i8" | "i16" | "i32" | "i64" | "i128" | "u8" | "u16" | "u32" | "u64" | "f32" | "f64"
+        | "isize" | "usize" => "number",
+        "str" | "String" | "char" => "string",
+        "bool" => "boolean",
+        _ => ident,
+    }
 }
