@@ -62,6 +62,10 @@ fn main() {
                 let enum_text = parse_item_enum(item_enum);
                 output_text.push_str(&enum_text);
             }
+            syn::Item::Struct(item_struct) => {
+                let struct_text = parse_item_struct(item_struct);
+                output_text.push_str(&struct_text);
+            }
             _ => {
                 dbg!("Unimplemented type!");
             }
@@ -91,7 +95,7 @@ fn parse_item_enum(item_enum: &syn::ItemEnum) -> String {
     output_text.push_str(&format!("export type {} =\n", item_enum.ident));
 
     for var in item_enum.variants.iter() {
-        output_text.push_str(&format!(" | {{ t: \"{}\", c: ", var.ident));
+        output_text.push_str(&format!("| {{ t: \"{}\", c: ", var.ident));
 
         match &var.fields {
             syn::Fields::Named(named_fields) => {
@@ -114,6 +118,32 @@ fn parse_item_enum(item_enum: &syn::ItemEnum) -> String {
         output_text.push_str(" }\n")
     }
     output_text.push_str(";\n");
+
+    output_text
+}
+
+fn parse_item_struct(item_struct: &syn::ItemStruct) -> String {
+    let mut output_text = String::new();
+
+    output_text.push_str(&format!("export interface {} {{\n", item_struct.ident));
+
+    match &item_struct.fields {
+        syn::Fields::Named(named_fields) => {
+            for named_field in named_fields.named.iter() {
+                if let Some(ident) = &named_field.ident {
+                    output_text.push_str(&format!("  {}: ", ident));
+                }
+                output_text.push_str(&format!("{};\n", parse_type(&named_field.ty)));
+            }
+        }
+        syn::Fields::Unnamed(unnamed_fields) => {
+            for (index, unnamed_field) in unnamed_fields.unnamed.iter().enumerate() {
+                output_text.push_str(&format!("{}: {};\n", index, parse_type(&unnamed_field.ty)));
+            }
+        }
+        syn::Fields::Unit => (),
+    }
+    output_text.push_str("}\n");
 
     output_text
 }
