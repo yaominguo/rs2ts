@@ -38,6 +38,8 @@ fn main() {
     let content = read_file(input_filename);
 
     write_file(output_filename, content);
+
+    println!("Convert Complete: {}", output_filename);
 }
 
 fn read_file(input_filename: &str) -> syn::File {

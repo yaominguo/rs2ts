@@ -6,9 +6,9 @@ type Result<T, U> = T | U;
 export type NumberAlias = number;
 export type TupleAlias = [number, string];
 export type Color =
-| { t: "Red", c: number }
-| { t: "Green", c: number }
-| { t: "Blue", c: string }
+| { name: "Red", type: number }
+| { name: "Green", type: number }
+| { name: "Blue", type: string }
 ;
 export interface Person {
   name: string;

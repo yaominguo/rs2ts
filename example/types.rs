@@ -2,7 +2,7 @@ type NumberAlias = i32;
 
 type TupleAlias = (i32, str);
 
-#[serde(tag = "t", content = "c")]
+#[serde(tag = "name", content = "value")]
 enum Color {
     Red(u32),
     Green(i32),

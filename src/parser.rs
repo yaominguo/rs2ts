@@ -16,7 +16,7 @@ pub fn parse_item_enum(item_enum: &syn::ItemEnum) -> String {
     output_text.push_str(&format!("export type {} =\n", item_enum.ident));
 
     item_enum.variants.iter().for_each(|var| {
-        output_text.push_str(&format!("| {{ t: \"{}\", c: ", var.ident));
+        output_text.push_str(&format!("| {{ name: \"{}\", type: ", var.ident));
 
         match &var.fields {
             syn::Fields::Named(named_fields) => {
