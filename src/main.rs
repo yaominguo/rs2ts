@@ -52,6 +52,12 @@ fn main() {
 
     let mut output_text = String::new();
 
+    output_text.push_str("type HashSet<T extends number | string> = Record<T, undefined>;\n");
+    output_text.push_str("type HashMap<T extends number | string, U> = Record<T, U>;\n");
+    output_text.push_str("type Vec<T> = Array<T>;\n");
+    output_text.push_str("type Option<T> = T | undefined;\n");
+    output_text.push_str("type Result<T, U> = T | U;\n");
+
     for item in input_syntax.items.iter() {
         match item {
             syn::Item::Type(item_type) => {
@@ -150,22 +156,52 @@ fn parse_item_struct(item_struct: &syn::ItemStruct) -> String {
 
 fn parse_type(syn_type: &syn::Type) -> String {
     let mut output_text = String::new();
-    if let syn::Type::Path(type_path) = syn_type {
-        let seg = type_path.path.segments.last().unwrap();
+    match syn_type {
+        syn::Type::Path(type_path) => {
+            let seg = type_path.path.segments.last().unwrap();
 
-        let field_type = seg.ident.to_string();
+            let field_type = seg.ident.to_string();
 
-        let ts_field_type = parse_type_ident(&field_type).to_owned();
+            let ts_field_type = parse_type_ident(&field_type).to_owned();
 
-        output_text.push_str(&ts_field_type);
+            output_text.push_str(&ts_field_type);
 
-        if let syn::PathArguments::None = &seg.arguments {
-        } else {
+            match &seg.arguments {
+                syn::PathArguments::AngleBracketed(angle_bracket_args) => {
+                    output_text.push('<');
+                    for (index, arg) in angle_bracket_args.args.iter().enumerate() {
+                        if let syn::GenericArgument::Type(inner_type) = arg {
+                            output_text.push_str(&parse_type(inner_type));
+                            if index < angle_bracket_args.args.iter().len() - 1 {
+                                output_text.push_str(", ");
+                            }
+                        } else {
+                            dbg!("Unimplemented token");
+                        }
+                    }
+                    output_text.push('>');
+                }
+                syn::PathArguments::None => {}
+                _ => {
+                    dbg!("Unimplemented token");
+                }
+            }
+        }
+        syn::Type::Tuple(type_tuple) => {
+            output_text.push('[');
+            for (index, el) in type_tuple.elems.iter().enumerate() {
+                output_text.push_str(&parse_type(el));
+                if index < type_tuple.elems.iter().len() - 1 {
+                    output_text.push_str(", ");
+                }
+            }
+            output_text.push(']');
+        }
+        _ => {
             dbg!("Unimplemented token");
         }
-    } else {
-        dbg!("Unimplemented token");
     }
+
     output_text
 }
 
