@@ -4,7 +4,7 @@ type TupleAlias = (i32, str);
 
 #[serde(tag = "t", content = "c")]
 enum Color {
-    Red(undefined),
+    Red(u32),
     Green(i32),
     Blue(str),
 }

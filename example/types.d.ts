@@ -6,7 +6,7 @@ type Result<T, U> = T | U;
 export type NumberAlias = number;
 export type TupleAlias = [number, string];
 export type Color =
-| { t: "Red", c: undefined }
+| { t: "Red", c: number }
 | { t: "Green", c: number }
 | { t: "Blue", c: string }
 ;
